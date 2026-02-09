@@ -621,7 +621,8 @@ export class UIManager {
         // Per-street breakdown
         text += `📍 PER-STREET BREAKDOWN:\n`;
         for (let i = 1; i <= this.scene.unlockedStreets; i++) {
-            const streetName = this.scene.streetNames[i] || `Street ${i}`;
+            const street = this.scene.streets.find(s => s.number === i);
+            const streetName = street ? street.name : `Street ${i}`;
             const streetBuildings = this.scene.buildings.filter(b => (b.streetNumber || 1) === i);
 
             text += `\n${streetName}:\n`;

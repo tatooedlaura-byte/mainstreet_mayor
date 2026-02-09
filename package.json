@@ -1,0 +1,21 @@
+{
+  "name": "mainstreet-mayor",
+  "version": "1.0.0",
+  "description": "Main Street Mayor - City Building Game",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 5500",
+    "build": "echo 'No build step needed for HTML game'",
+    "ios": "npx cap open ios"
+  },
+  "keywords": ["game", "phaser", "city-building"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  }
+}

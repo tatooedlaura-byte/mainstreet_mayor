@@ -2291,7 +2291,7 @@ export class BuildingRenderer {
         for (let floor = 0; floor < 4; floor++) {
             for (let i = 0; i < 3; i++) {
                 const wx = x - 52.5 + (i * 38.75);
-                const wy = y - building.height + 40 + (floor * 70);
+                const wy = y - building.height + 30 + (floor * 55);
                 graphics.fillRect(wx, wy, 35, 50);
 
                 // Window frame

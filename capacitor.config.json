@@ -1,0 +1,8 @@
+{
+  "appId": "com.mainstreetmayor.app",
+  "appName": "Main Street Mayor",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
