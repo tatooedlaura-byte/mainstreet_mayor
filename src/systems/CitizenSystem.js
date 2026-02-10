@@ -119,78 +119,16 @@ export class CitizenSystem {
         const citizen = this.scene.add.container(startX, startY);
         citizen.setDepth(11); // Above buildings (10), below buses (12)
 
-        // Randomize citizen appearance
-        const skinTones = [0xFFDBAC, 0xF1C27D, 0xE0AC69, 0xC68642, 0x8D5524, 0x5C3317];
-        const shirtColors = [0x2196F3, 0xF44336, 0x4CAF50, 0xFF9800, 0x9C27B0, 0x00BCD4, 0xE91E63];
-        const pantColors = [0x1565C0, 0x424242, 0x795548, 0x5D4037];
-
-        const skinTone = skinTones[Math.floor(Math.random() * skinTones.length)];
-        const shirtColor = shirtColors[Math.floor(Math.random() * shirtColors.length)];
-        const pantColor = pantColors[Math.floor(Math.random() * pantColors.length)];
-
         // Shadow
         const shadow = this.scene.add.ellipse(0, 28, 20, 6, 0x000000, 0.3);
         citizen.add(shadow);
 
-        // Legs
-        const leftLeg = this.scene.add.graphics();
-        leftLeg.fillStyle(pantColor, 1);
-        leftLeg.fillRoundedRect(-6, 6, 6, 14, 2);
-        citizen.add(leftLeg);
-
-        const rightLeg = this.scene.add.graphics();
-        rightLeg.fillStyle(pantColor, 1);
-        rightLeg.fillRoundedRect(0, 6, 6, 14, 2);
-        citizen.add(rightLeg);
-
-        // Shoes
-        const leftShoe = this.scene.add.ellipse(-3, 22, 8, 4, 0x000000);
-        const rightShoe = this.scene.add.ellipse(3, 22, 8, 4, 0x000000);
-        citizen.add(leftShoe);
-        citizen.add(rightShoe);
-
-        // Body (shirt)
-        const body = this.scene.add.graphics();
-        body.fillStyle(shirtColor, 1);
-        body.fillRoundedRect(-8, -12, 16, 20, 3);
-        citizen.add(body);
-
-        // Arms
-        const leftArm = this.scene.add.graphics();
-        leftArm.fillStyle(shirtColor, 1);
-        leftArm.fillRoundedRect(-12, -6, 4, 10, 2);
-        citizen.add(leftArm);
-
-        const rightArm = this.scene.add.graphics();
-        rightArm.fillStyle(shirtColor, 1);
-        rightArm.fillRoundedRect(8, -6, 4, 10, 2);
-        citizen.add(rightArm);
-
-        // Hands
-        const leftHand = this.scene.add.circle(-10, 6, 3, skinTone);
-        const rightHand = this.scene.add.circle(10, 6, 3, skinTone);
-        citizen.add(leftHand);
-        citizen.add(rightHand);
-
-        // Neck
-        const neck = this.scene.add.rectangle(0, -14, 4, 3, skinTone);
-        citizen.add(neck);
-
-        // Head
-        const head = this.scene.add.circle(0, -20, 8, skinTone);
-        citizen.add(head);
-
-        // Eyes
-        const leftEye = this.scene.add.circle(-3, -21, 1.5, 0x000000);
-        const rightEye = this.scene.add.circle(3, -21, 1.5, 0x000000);
-        citizen.add(leftEye);
-        citizen.add(rightEye);
-
-        // Random hair color and style
-        const hairColors = [0x000000, 0x3E2723, 0x5D4037, 0xFFD700, 0xF44336];
-        const hairColor = hairColors[Math.floor(Math.random() * hairColors.length)];
-        const hair = this.scene.add.circle(0, -24, 6, hairColor);
-        citizen.add(hair);
+        // Add pixel art citizen sprite
+        const citizenSprite = this.scene.add.sprite(0, 0, 'citizen');
+        citizenSprite.setOrigin(0.5, 0.5);
+        // Scale to appropriate size (0.15x since original is 512x512)
+        citizenSprite.setScale(0.15);
+        citizen.add(citizenSprite);
 
         // Store citizen data
         const targetBuilding = this.scene.buildings.length > 0
@@ -199,6 +137,7 @@ export class CitizenSystem {
 
         this.scene.citizens.push({
             container: citizen,
+            sprite: citizenSprite, // Store sprite reference for flipping
             x: startX,
             y: startY,
             state: 'walking', // walking, waiting, riding, visiting
@@ -335,6 +274,11 @@ export class CitizenSystem {
                 const distance = citizen.walkSpeed * deltaTime;
                 citizen.x += distance * citizen.direction;
                 citizen.container.x = citizen.x;
+
+                // Flip sprite based on direction (right = normal, left = flipped)
+                if (citizen.sprite) {
+                    citizen.sprite.setFlipX(citizen.direction < 0);
+                }
 
                 // Randomly decide to go to a bus stop
                 if (Math.random() < 0.001 && this.scene.busStops && this.scene.busStops.length > 0) { // 0.1% chance per frame

@@ -30,6 +30,9 @@ class MainScene extends Phaser.Scene {
 
         // Load mayor sprite
         this.load.image('mayor', 'assets/mayor.png');
+
+        // Load citizen sprite
+        this.load.image('citizen', 'assets/citizen.png');
     }
 
     create() {
@@ -2261,6 +2264,15 @@ class MainScene extends Phaser.Scene {
             const buildingType = this.buildingTypes[building.type];
             const newBuildingY = this.gameHeight - 100;
 
+            // Skip redrawing sprite-based buildings (clothing shop)
+            if (building.sprite) {
+                // Just reposition the sprite (accounting for 1.5x scale)
+                const spriteHeight = buildingType.height * 1.5;
+                building.sprite.y = newBuildingY - spriteHeight / 2;
+                building.y = newBuildingY;
+                continue;
+            }
+
             // Clear and redraw building
             building.graphics.clear();
 
@@ -2293,6 +2305,15 @@ class MainScene extends Phaser.Scene {
         if (this.player.y > newPlatformY - 50) {
             this.player.y = newPlatformY - 50;
             this.playerVisual.y = this.player.y;
+        }
+
+        // Reposition all citizens to new ground level
+        const newCitizenY = newPlatformY - 30;
+        for (let citizen of this.citizens) {
+            if (citizen.container) {
+                citizen.y = newCitizenY;
+                citizen.container.y = newCitizenY;
+            }
         }
 
         // Update background layers
@@ -4821,7 +4842,7 @@ class MainScene extends Phaser.Scene {
                 // Show prompt above the shop building
                 const shopType = this.buildingTypes[this.nearShop.type];
                 if (!this.shopPrompt) {
-                    this.shopPrompt = this.add.text(this.nearShop.x, this.nearShop.y - shopType.height - 100, 'Press E to enter Shop', {
+                    this.shopPrompt = this.add.text(this.nearShop.x, this.nearShop.y - shopType.height - 180, 'Press E to enter Shop', {
                         fontSize: '12px',
                         color: '#ffffff',
                         backgroundColor: '#4ECDC4',
@@ -4829,7 +4850,7 @@ class MainScene extends Phaser.Scene {
                     }).setOrigin(0.5).setDepth(1000);
                 } else {
                     this.shopPrompt.x = this.nearShop.x;
-                    this.shopPrompt.y = this.nearShop.y - shopType.height - 100;
+                    this.shopPrompt.y = this.nearShop.y - shopType.height - 180;
                     this.shopPrompt.setVisible(true);
                 }
 
@@ -4863,7 +4884,7 @@ class MainScene extends Phaser.Scene {
                 // Show prompt above the hotel building
                 const hotelType = this.buildingTypes[this.nearHotel.type];
                 if (!this.hotelPrompt) {
-                    this.hotelPrompt = this.add.text(this.nearHotel.x, this.nearHotel.y - hotelType.height - 100, 'Press E to enter Hotel', {
+                    this.hotelPrompt = this.add.text(this.nearHotel.x, this.nearHotel.y - hotelType.height - 180, 'Press E to enter Hotel', {
                         fontSize: '12px',
                         color: '#ffffff',
                         backgroundColor: '#9C27B0',
@@ -4905,7 +4926,7 @@ class MainScene extends Phaser.Scene {
                 // Show prompt above the restaurant building
                 const restaurantType = this.buildingTypes[this.nearRestaurant.type];
                 if (!this.restaurantPrompt) {
-                    this.restaurantPrompt = this.add.text(this.nearRestaurant.x, this.nearRestaurant.y - restaurantType.height - 100, 'Press E to enter Restaurant', {
+                    this.restaurantPrompt = this.add.text(this.nearRestaurant.x, this.nearRestaurant.y - restaurantType.height - 180, 'Press E to enter Restaurant', {
                         fontSize: '12px',
                         color: '#ffffff',
                         backgroundColor: '#FFE66D',
@@ -4952,7 +4973,7 @@ class MainScene extends Phaser.Scene {
                 // Show prompt above the school building
                 const schoolType = this.buildingTypes[nearSchool.type];
                 if (!this.schoolPrompt) {
-                    this.schoolPrompt = this.add.text(nearSchool.x, nearSchool.y - schoolType.height - 100, 'Press E to enter School', {
+                    this.schoolPrompt = this.add.text(nearSchool.x, nearSchool.y - schoolType.height - 180, 'Press E to enter School', {
                         fontSize: '12px',
                         color: '#ffffff',
                         backgroundColor: '#FFC107',
@@ -5202,7 +5223,7 @@ class MainScene extends Phaser.Scene {
                 if (totalRent < 1) {
                     const apartmentType = this.buildingTypes[this.nearApartment.type];
                     if (!this.apartmentPrompt) {
-                        this.apartmentPrompt = this.add.text(this.nearApartment.x, this.nearApartment.y - apartmentType.height - 100, 'Press E to enter Apartment', {
+                        this.apartmentPrompt = this.add.text(this.nearApartment.x, this.nearApartment.y - apartmentType.height - 180, 'Press E to enter Apartment', {
                             fontSize: '12px',
                             color: '#ffffff',
                             backgroundColor: '#795548',

@@ -51,6 +51,7 @@ export class SaveSystem {
                         type: b.type,
                         x: b.x,
                         y: b.y,
+                        useSprite: !!b.sprite, // Save whether this building uses a sprite
                         streetNumber: b.streetNumber || 1, // Which street this building is on
                         accumulatedIncome: b.accumulatedIncome || 0,
                         lastIncomeTime: b.lastIncomeTime || Date.now(),
@@ -204,6 +205,7 @@ export class SaveSystem {
                         buildingData.type,
                         buildingData.x,
                         buildingData.y,
+                        buildingData.useSprite || false, // Whether to use sprite
                         buildingData.streetNumber || 1, // Street number
                         buildingData.accumulatedIncome || 0,
                         buildingData.lastIncomeTime || Date.now(),
@@ -244,8 +246,8 @@ export class SaveSystem {
         }
     }
 
-    loadBuilding(type, x, y, streetNumber = 1, accumulatedIncome = 0, lastIncomeTime = Date.now(), storedResources = 0, lastResourceTime = Date.now(), units = null, rooms = null, lastNightCheck = null, placedDistrict = null, districtBonus = 1.0, inventory = null, hasEmployee = null, isOpen = null, dailyWage = null, lastWageCheck = null, lastAutoClean = null, facadeVariation = 0, hasMaid = null, maidDailyWage = null, lastMaidWageCheck = null, lastMaidClean = null, tables = null, hasDayWaiter = null, hasNightWaiter = null, dayWaiterWage = null, nightWaiterWage = null, mealPrice = null) {
-        console.log(`🔍 Attempting to load building: type=${type}, x=${x}`);
+    loadBuilding(type, x, y, useSprite = false, streetNumber = 1, accumulatedIncome = 0, lastIncomeTime = Date.now(), storedResources = 0, lastResourceTime = Date.now(), units = null, rooms = null, lastNightCheck = null, placedDistrict = null, districtBonus = 1.0, inventory = null, hasEmployee = null, isOpen = null, dailyWage = null, lastWageCheck = null, lastAutoClean = null, facadeVariation = 0, hasMaid = null, maidDailyWage = null, lastMaidWageCheck = null, lastMaidClean = null, tables = null, hasDayWaiter = null, hasNightWaiter = null, dayWaiterWage = null, nightWaiterWage = null, mealPrice = null) {
+        console.log(`🔍 Attempting to load building: type=${type}, x=${x}, useSprite=${useSprite}`);
         const building = this.scene.buildingTypes[type];
         if (!building) {
             console.error(`❌ Building type '${type}' not found in buildingTypes!`);
@@ -259,23 +261,45 @@ export class SaveSystem {
 
         console.log(`Drawing ${type} at x=${x}, y=${buildingY}, width=${building.width}, height=${building.height}`);
 
-        const newBuilding = this.scene.add.graphics();
-        newBuilding.setDepth(10); // Buildings are on top of background
+        let newBuilding;
+        let buildingSprite = null;
 
-        // Don't draw base rectangle for parks/recreation items and theme park (they draw everything custom)
-        if (type !== 'park' && type !== 'playground' && type !== 'fountain' && type !== 'themePark') {
-            newBuilding.fillStyle(building.color, 1);
-            newBuilding.fillRect(x - building.width/2, buildingY - building.height, building.width, building.height);
-            newBuilding.lineStyle(3, 0x000000, 1);
-            newBuilding.strokeRect(x - building.width/2, buildingY - building.height, building.width, building.height);
-        }
+        // Use sprite for buildings that were saved with sprites
+        if (useSprite && type === 'clothingShop' && this.scene.textures.exists('clothingShop')) {
+            // Create sprite for clothing shop
+            const spriteWidth = building.width * 1.5;
+            const spriteHeight = building.height * 1.5;
 
-        // Draw detailed building features (windows, doors, roof, etc.)
-        try {
-            this.scene.buildingRenderer.drawBuildingDetails(newBuilding, type, x, buildingY, facadeVariation);
-            console.log(`Successfully drew details for ${type}`);
-        } catch (error) {
-            console.error(`Error drawing details for ${type}:`, error);
+            buildingSprite = this.scene.add.sprite(x, buildingY - spriteHeight / 2, 'clothingShop');
+            buildingSprite.setDepth(10);
+            buildingSprite.setVisible(streetNumber === this.scene.currentStreet);
+            buildingSprite.setOrigin(0.5, 0.5);
+            buildingSprite.setDisplaySize(spriteWidth, spriteHeight);
+
+            // Create empty graphics object for consistency
+            newBuilding = this.scene.add.graphics();
+            newBuilding.setDepth(10);
+            newBuilding.setVisible(streetNumber === this.scene.currentStreet);
+        } else {
+            // Use graphics for all other buildings
+            newBuilding = this.scene.add.graphics();
+            newBuilding.setDepth(10); // Buildings are on top of background
+
+            // Don't draw base rectangle for parks/recreation items and theme park (they draw everything custom)
+            if (type !== 'park' && type !== 'playground' && type !== 'fountain' && type !== 'themePark') {
+                newBuilding.fillStyle(building.color, 1);
+                newBuilding.fillRect(x - building.width/2, buildingY - building.height, building.width, building.height);
+                newBuilding.lineStyle(3, 0x000000, 1);
+                newBuilding.strokeRect(x - building.width/2, buildingY - building.height, building.width, building.height);
+            }
+
+            // Draw detailed building features (windows, doors, roof, etc.)
+            try {
+                this.scene.buildingRenderer.drawBuildingDetails(newBuilding, type, x, buildingY, facadeVariation);
+                console.log(`Successfully drew details for ${type}`);
+            } catch (error) {
+                console.error(`Error drawing details for ${type}:`, error);
+            }
         }
 
         // Building signs are now handled by addBuildingSign() function
@@ -294,6 +318,7 @@ export class SaveSystem {
         // Add loaded building with income and resource tracking (use buildingY for current ground level)
         const buildingData = {
             graphics: newBuilding,
+            sprite: buildingSprite, // Store sprite reference if it exists
             type: type,
             x: x,
             y: buildingY,
