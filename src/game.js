@@ -27,6 +27,9 @@ class MainScene extends Phaser.Scene {
     preload() {
         // Load building sprites
         this.load.image('clothingShop', 'assets/clothingShop.png');
+
+        // Load mayor sprite
+        this.load.image('mayor', 'assets/mayor.png');
     }
 
     create() {
@@ -234,136 +237,12 @@ class MainScene extends Phaser.Scene {
         const shadow = this.add.ellipse(0, 28, 35, 10, 0x000000, 0.3);
         this.playerVisual.add(shadow);
 
-        // Legs
-        const leftLeg = this.add.graphics();
-        leftLeg.fillStyle(0x1565C0, 1);
-        leftLeg.fillRoundedRect(-8, 8, 8, 18, 2);
-        this.playerVisual.add(leftLeg);
-
-        const rightLeg = this.add.graphics();
-        rightLeg.fillStyle(0x1565C0, 1);
-        rightLeg.fillRoundedRect(0, 8, 8, 18, 2);
-        this.playerVisual.add(rightLeg);
-
-        // Shoes
-        const leftShoe = this.add.ellipse(-4, 28, 12, 6, 0x000000);
-        const rightShoe = this.add.ellipse(4, 28, 12, 6, 0x000000);
-        this.playerVisual.add(leftShoe);
-        this.playerVisual.add(rightShoe);
-
-        // Body (suit)
-        const body = this.add.graphics();
-        body.fillStyle(0x2196F3, 1);
-        body.fillRoundedRect(-10, -15, 20, 24, 3);
-        this.playerVisual.add(body);
-
-        // Tie
-        const tie = this.add.graphics();
-        tie.fillStyle(0xC62828, 1);
-        tie.beginPath();
-        tie.moveTo(0, -10);
-        tie.lineTo(-3, -5);
-        tie.lineTo(-4, 5);
-        tie.lineTo(0, 8);
-        tie.lineTo(4, 5);
-        tie.lineTo(3, -5);
-        tie.closePath();
-        tie.fillPath();
-        this.playerVisual.add(tie);
-
-        // Collar
-        const collar = this.add.graphics();
-        collar.fillStyle(0xFFFFFF, 1);
-        collar.fillTriangle(-6, -12, 0, -8, -3, -6);
-        collar.fillTriangle(6, -12, 0, -8, 3, -6);
-        this.playerVisual.add(collar);
-
-        // Arms
-        const leftArm = this.add.graphics();
-        leftArm.fillStyle(0x2196F3, 1);
-        leftArm.fillRoundedRect(-14, -8, 5, 14, 2);
-        this.playerVisual.add(leftArm);
-
-        const rightArm = this.add.graphics();
-        rightArm.fillStyle(0x2196F3, 1);
-        rightArm.fillRoundedRect(9, -8, 5, 14, 2);
-        this.playerVisual.add(rightArm);
-
-        // Hands
-        const leftHand = this.add.circle(-11, 8, 4, 0xFFDBAC);
-        const rightHand = this.add.circle(11, 8, 4, 0xFFDBAC);
-        this.playerVisual.add(leftHand);
-        this.playerVisual.add(rightHand);
-
-        // Neck
-        const neck = this.add.rectangle(0, -16, 6, 4, 0xFFDBAC);
-        this.playerVisual.add(neck);
-
-        // Head
-        const head = this.add.circle(0, -25, 11, 0xFFDBAC);
-        this.playerVisual.add(head);
-
-        // Ears
-        const leftEar = this.add.circle(-10, -25, 3, 0xFFDBAC);
-        const rightEar = this.add.circle(10, -25, 3, 0xFFDBAC);
-        this.playerVisual.add(leftEar);
-        this.playerVisual.add(rightEar);
-
-        // Eyes
-        const leftEye = this.add.graphics();
-        leftEye.fillStyle(0xFFFFFF, 1);
-        leftEye.fillCircle(-4, -27, 3);
-        leftEye.fillStyle(0x000000, 1);
-        leftEye.fillCircle(-3, -27, 2);
-        this.playerVisual.add(leftEye);
-
-        const rightEye = this.add.graphics();
-        rightEye.fillStyle(0xFFFFFF, 1);
-        rightEye.fillCircle(4, -27, 3);
-        rightEye.fillStyle(0x000000, 1);
-        rightEye.fillCircle(5, -27, 2);
-        this.playerVisual.add(rightEye);
-
-        // Eyebrows
-        const leftBrow = this.add.graphics();
-        leftBrow.lineStyle(2, 0x654321, 1);
-        leftBrow.lineBetween(-7, -31, -2, -30);
-        this.playerVisual.add(leftBrow);
-
-        const rightBrow = this.add.graphics();
-        rightBrow.lineStyle(2, 0x654321, 1);
-        rightBrow.lineBetween(2, -30, 7, -31);
-        this.playerVisual.add(rightBrow);
-
-        // Smile
-        const smile = this.add.graphics();
-        smile.lineStyle(2, 0x000000, 1);
-        smile.arc(0, -23, 5, 0.2, Math.PI - 0.2, false);
-        smile.strokePath();
-        this.playerVisual.add(smile);
-
-        // Nose
-        const nose = this.add.circle(0, -24, 2, 0xFFAA88);
-        this.playerVisual.add(nose);
-
-        // Mayor's hat
-        const hatBrim = this.add.graphics();
-        hatBrim.fillStyle(0x1976D2, 1);
-        hatBrim.fillRoundedRect(-12, -36, 24, 3, 1);
-        this.playerVisual.add(hatBrim);
-
-        const hatTop = this.add.graphics();
-        hatTop.fillStyle(0x1976D2, 1);
-        hatTop.fillRoundedRect(-8, -44, 16, 8, 2);
-        this.playerVisual.add(hatTop);
-
-        // Hat badge
-        const badge = this.add.graphics();
-        badge.fillStyle(0xFFD700, 1);
-        badge.fillCircle(0, -40, 3);
-        badge.fillStyle(0xFFA500, 1);
-        badge.fillCircle(0, -40, 2);
-        this.playerVisual.add(badge);
+        // Add pixel art mayor sprite
+        const mayorSprite = this.add.sprite(0, 0, 'mayor');
+        mayorSprite.setOrigin(0.5, 0.5);
+        // Scale to a reasonable size (0.3x since original is 256x256)
+        mayorSprite.setScale(0.3);
+        this.playerVisual.add(mayorSprite);
 
         // Add collisions (will be set up after streets are created)
 
