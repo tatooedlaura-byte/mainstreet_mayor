@@ -24,6 +24,11 @@ class MainScene extends Phaser.Scene {
         super({ key: 'MainScene' });
     }
 
+    preload() {
+        // Load building sprites
+        this.load.image('clothingShop', 'assets/clothingShop.png');
+    }
+
     create() {
         // Set world bounds (use window height for dynamic sizing)
         this.gameHeight = window.innerHeight;
@@ -2047,6 +2052,7 @@ class MainScene extends Phaser.Scene {
         this.buildings.forEach(building => {
             const isOnCurrentStreet = (building.streetNumber || 1) === this.currentStreet;
             if (building.graphics) building.graphics.setVisible(isOnCurrentStreet);
+            if (building.sprite) building.sprite.setVisible(isOnCurrentStreet);
             if (building.bonusIndicator) building.bonusIndicator.setVisible(isOnCurrentStreet);
             if (building.sign) building.sign.setVisible(isOnCurrentStreet);
             if (building.vacancySigns) {
@@ -3083,18 +3089,23 @@ class MainScene extends Phaser.Scene {
             }).setOrigin(0.5).setDepth(11);
             buildingData.sign = restaurantSign;
         } else if (this.isShop(type)) {
-            // Shop sign on banner
-            const shopName = buildingType.name.toUpperCase();
-            const shopSign = this.add.text(x, y - 100, shopName, {
-                fontSize: '16px',
-                color: '#FFFFFF',
-                fontStyle: 'bold',
-                fontFamily: 'Arial',
-                backgroundColor: '#000000',
-                padding: { x: 8, y: 4 },
-                resolution: 2
-            }).setOrigin(0.5).setDepth(11);
-            buildingData.sign = shopSign;
+            // Skip sign for clothing shop if using sprite (sign is in the pixel art)
+            if (type === 'clothingShop' && buildingData.sprite) {
+                // No sign needed - it's in the pixel art
+            } else {
+                // Shop sign on banner for other shops
+                const shopName = buildingType.name.toUpperCase();
+                const shopSign = this.add.text(x, y - 100, shopName, {
+                    fontSize: '16px',
+                    color: '#FFFFFF',
+                    fontStyle: 'bold',
+                    fontFamily: 'Arial',
+                    backgroundColor: '#000000',
+                    padding: { x: 8, y: 4 },
+                    resolution: 2
+                }).setOrigin(0.5).setDepth(11);
+                buildingData.sign = shopSign;
+            }
         }
 
         // Set initial visibility based on which street this building is on
@@ -5741,6 +5752,7 @@ class MainScene extends Phaser.Scene {
         this.buildings.forEach(building => {
             const isOnCurrentStreet = building.streetNumber === this.currentStreet;
             if (building.graphics) building.graphics.setVisible(isOnCurrentStreet);
+            if (building.sprite) building.sprite.setVisible(isOnCurrentStreet);
             if (building.bonusIndicator) building.bonusIndicator.setVisible(isOnCurrentStreet);
             if (building.incomeIndicator) building.incomeIndicator.setVisible(isOnCurrentStreet && building.accumulatedIncome >= 5);
             if (building.resourceIndicator) building.resourceIndicator.setVisible(isOnCurrentStreet);
@@ -6037,6 +6049,11 @@ class MainScene extends Phaser.Scene {
             building.graphics.destroy();
         }
 
+        // Destroy sprite if it exists
+        if (building.sprite) {
+            building.sprite.destroy();
+        }
+
         // (Labels removed - we use building signs now)
 
         // Destroy income indicator (with safety check)
@@ -6122,20 +6139,45 @@ class MainScene extends Phaser.Scene {
         // Generate random facade variation before drawing
         const facadeVariation = Math.floor(Math.random() * 4);
 
-        const newBuilding = this.add.graphics();
-        newBuilding.setDepth(10); // Buildings are on top of background
-        newBuilding.setVisible(true); // Building is on current street, so it should be visible
+        let newBuilding;
+        let buildingSprite = null;
 
-        // Don't draw base rectangle for parks/recreation items and theme park (they draw everything custom)
-        if (this.selectedBuilding !== 'park' && this.selectedBuilding !== 'playground' && this.selectedBuilding !== 'fountain' && this.selectedBuilding !== 'themePark') {
-            newBuilding.fillStyle(building.color, 1);
-            newBuilding.fillRect(x - building.width/2, y - building.height, building.width, building.height);
-            newBuilding.lineStyle(3, 0x000000, 1);
-            newBuilding.strokeRect(x - building.width/2, y - building.height, building.width, building.height);
+        // Use sprite for clothing shop if texture is loaded
+        if (this.selectedBuilding === 'clothingShop' && this.textures.exists('clothingShop')) {
+            // Create sprite for clothing shop
+            // Make it 1.5x larger than default (300x360 instead of 200x240)
+            const spriteWidth = building.width * 1.5;
+            const spriteHeight = building.height * 1.5;
+
+            buildingSprite = this.add.sprite(x, y - spriteHeight / 2, 'clothingShop');
+            buildingSprite.setDepth(10);
+            buildingSprite.setVisible(true);
+            buildingSprite.setOrigin(0.5, 0.5);
+
+            // Scale sprite larger for better visibility (pixel art stays crisp!)
+            buildingSprite.setDisplaySize(spriteWidth, spriteHeight);
+
+            // Create empty graphics object for consistency
+            newBuilding = this.add.graphics();
+            newBuilding.setDepth(10);
+            newBuilding.setVisible(true);
+        } else {
+            // Use graphics for all other buildings
+            newBuilding = this.add.graphics();
+            newBuilding.setDepth(10); // Buildings are on top of background
+            newBuilding.setVisible(true); // Building is on current street, so it should be visible
+
+            // Don't draw base rectangle for parks/recreation items and theme park (they draw everything custom)
+            if (this.selectedBuilding !== 'park' && this.selectedBuilding !== 'playground' && this.selectedBuilding !== 'fountain' && this.selectedBuilding !== 'themePark') {
+                newBuilding.fillStyle(building.color, 1);
+                newBuilding.fillRect(x - building.width/2, y - building.height, building.width, building.height);
+                newBuilding.lineStyle(3, 0x000000, 1);
+                newBuilding.strokeRect(x - building.width/2, y - building.height, building.width, building.height);
+            }
+
+            // Draw detailed building features (windows, doors, roof, etc.)
+            this.buildingRenderer.drawBuildingDetails(newBuilding, this.selectedBuilding, x, y, facadeVariation);
         }
-
-        // Draw detailed building features (windows, doors, roof, etc.)
-        this.buildingRenderer.drawBuildingDetails(newBuilding, this.selectedBuilding, x, y, facadeVariation);
 
         // Building-specific decorations
         if (this.selectedBuilding === 'bank') {
@@ -6165,6 +6207,7 @@ class MainScene extends Phaser.Scene {
         // Add building with income and resource tracking
         const buildingData = {
             graphics: newBuilding,
+            sprite: buildingSprite, // Store sprite reference if it exists
             type: this.selectedBuilding,
             x: x,
             y: y,
